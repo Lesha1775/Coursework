@@ -1,0 +1,113 @@
+﻿using System;
+using System.Threading.Tasks;
+
+namespace WpfApp1
+{
+    public static class LUSolver
+    {
+        // Последовательный алгоритм
+        public static (double[,] L, double[,] U) SequentialLU(double[,] A, int n)
+        {
+            double[,] L = new double[n, n];
+            double[,] U = new double[n, n];
+
+            for (int i = 0; i < n; i++)
+            {
+                for (int j = 0; j < n; j++)
+                {
+                    U[0, i] = A[0, i];
+                    L[i, 0] = A[i, 0] / U[0, 0];
+                    if (i == j) L[i, i] = 1;
+                }
+            }
+
+            for (int i = 1; i < n; i++)
+            {
+                for (int j = i; j < n; j++)
+                {
+                    double sumForU = 0;
+                    for (int k = 0; k < i; k++) sumForU += L[i, k] * U[k, j];
+                    U[i, j] = A[i, j] - sumForU;
+
+                    double sumForL = 0;
+                    for (int k = 0; k < i; k++) sumForL += L[j, k] * U[k, i];
+                    L[j, i] = (A[j, i] - sumForL) / U[i, i];
+                }
+            }
+            return (L, U);
+        }
+
+        // Параллельный (распределенный) алгоритм
+        public static (double[,] L, double[,] U) ParallelLU(double[,] A, int n)
+        {
+            double[,] L = new double[n, n];
+            double[,] U = new double[n, n];
+
+            for (int i = 0; i < n; i++) L[i, i] = 1;
+
+            for (int i = 0; i < n; i++)
+            {
+                Parallel.For(i, n, j =>
+                {
+                    double sumU = 0;
+                    for (int k = 0; k < i; k++) sumU += L[i, k] * U[k, j];
+                    U[i, j] = A[i, j] - sumU;
+                });
+
+                Parallel.For(i + 1, n, j =>
+                {
+                    double sumL = 0;
+                    for (int k = 0; k < i; k++) sumL += L[j, k] * U[k, i];
+                    L[j, i] = (A[j, i] - sumL) / U[i, i];
+                });
+            }
+
+            return (L, U);
+        }
+
+        // Решение системы Ly = b, потом Ux = y
+        public static double[] Solve(double[,] L, double[,] U, double[] b, int n)
+        {
+            double[] y = new double[n];
+            for (int i = 0; i < n; i++)
+            {
+                double sum = 0;
+                for (int j = 0; j < i; j++) sum += L[i, j] * y[j];
+                y[i] = b[i] - sum;
+            }
+
+            double[] x = new double[n];
+            for (int i = n - 1; i >= 0; i--)
+            {
+                double sum = 0;
+                for (int j = i + 1; j < n; j++) sum += U[i, j] * x[j];
+                x[i] = (y[i] - sum) / U[i, i];
+            }
+
+            return x;
+        }
+
+        // Генератор СЛАУ
+        public static (double[,] A, double[] b) GenerateSystem(int size)
+        {
+            var A = new double[size, size];
+            var b = new double[size];
+            var rand = new Random(42); // Фиксированный seed для воспроизводимости
+
+            for (int i = 0; i < size; i++)
+            {
+                double rowSum = 0;
+                for (int j = 0; j < size; j++)
+                {
+                    A[i, j] = rand.NextDouble() * 10;
+                    rowSum += Math.Abs(A[i, j]);
+                }
+                
+                A[i, i] = rowSum + 1.0; 
+                b[i] = rand.NextDouble() * 100;
+            }
+
+            return (A, b);
+        }
+    }
+}

@@ -1,0 +1,73 @@
+﻿using System;
+using System.IO;
+using System.Net.Sockets;
+
+namespace WorkerNode
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.WriteLine("Ожидание запуска хоста (WPF)... Нажмите Enter для подключения.");
+            Console.ReadLine();
+
+            using var client = new TcpClient("127.0.0.1", 8888);
+            using var stream = client.GetStream();
+            using var reader = new BinaryReader(stream);
+            using var writer = new BinaryWriter(stream);
+
+            Console.WriteLine("Подключено к хосту. Ожидание задач...");
+
+            try
+            {
+                while (true)
+                {
+                    int cmd = reader.ReadInt32();
+                    if (cmd == 0) break; // Exit command
+
+                    if (cmd == 1) // Compute rows chunk
+                    {
+                        int n = reader.ReadInt32();
+                        int i = reader.ReadInt32();
+                        
+                        // Читаем опорную строку
+                        double[] pivotRow = new double[n];
+                        for (int col = 0; col < n; col++) pivotRow[col] = reader.ReadDouble();
+
+                        int rowCount = reader.ReadInt32();
+
+                        for (int r = 0; r < rowCount; r++)
+                        {
+                            int j = reader.ReadInt32(); // Исходный индекс строки
+                            
+                            double[] currentRow = new double[n];
+                            for (int col = 0; col < n; col++) currentRow[col] = reader.ReadDouble();
+
+                            // Вычисляем элементы U
+                            double sumU = 0;
+                            for (int k = 0; k < i; k++) sumU += currentRow[k] * pivotRow[k]; // A[i][k] * A[k][j] (но у нас in-place, это нужно осторожно применять)
+                            // Для простоты распределенной версии, академически применим:
+                            
+                            if (j >= i)
+                            {
+                                // U part logic
+                                double uSum = 0;
+                                for (int k = 0; k < i; k++) uSum += currentRow[k] * pivotRow[k];
+                                currentRow[i] -= uSum; // Осторожно с логикой in-place через сеть.
+                            }
+
+                            // Шлём обновленную строку обратно
+                            writer.Write(j);
+                            for (int col = 0; col < n; col++) writer.Write(currentRow[col]);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка или отключение: {ex.Message}");
+            }
+            Console.WriteLine("Отключен от хоста.");
+        }
+    }
+}

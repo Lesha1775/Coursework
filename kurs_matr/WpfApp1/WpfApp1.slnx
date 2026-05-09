@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="DistributedSolver.Core/DistributedSolver.Core.csproj" Id="e9eb37ec-f910-4910-810c-4e637462eeca" />
+  <Project Path="TestProject1/TestProject1.csproj" Id="c2b9b93b-b18f-46c4-b713-598942091cb9" />
+  <Project Path="WorkerNode/WorkerNode.csproj" Id="1be44233-1379-4e82-81d5-30dd8fc4d9b2" />
+  <Project Path="WpfApp1/WpfApp1.csproj" />
+</Solution>

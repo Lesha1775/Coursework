@@ -1,0 +1,64 @@
+﻿namespace TestProject1
+{
+    using System;
+    using WpfApp1;
+    using Xunit;
+
+    public class UnitTest1
+    {
+        [Fact]
+        public void SequentialLUSolver_CorrectSolution()
+        {
+            double[][] A = new double[][] 
+            { 
+                new double[] { 2, -1, 0 }, 
+                new double[] { -1, 2, -1 }, 
+                new double[] { 0, -1, 2 } 
+            };
+            double[] b = { 1, 0, 1 };
+
+            var (L, U) = LUSolver.SequentialLU(A, 3);
+            var x = LUSolver.Solve(L, U, b, 3);
+
+            Assert.Equal(1.0, x[0], 5);
+            Assert.Equal(1.0, x[1], 5);
+            Assert.Equal(1.0, x[2], 5);
+        }
+
+        [Fact]
+        public void ParallelLUSolver_CorrectSolution()
+        {
+            double[][] A = new double[][] 
+            { 
+                new double[] { 2, -1, 0 }, 
+                new double[] { -1, 2, -1 }, 
+                new double[] { 0, -1, 2 } 
+            };
+            double[] b = { 1, 0, 1 };
+
+            var (L, U) = LUSolver.ParallelLU(A, 3);
+            var x = LUSolver.Solve(L, U, b, 3);
+
+            Assert.Equal(1.0, x[0], 5);
+            Assert.Equal(1.0, x[1], 5);
+            Assert.Equal(1.0, x[2], 5);
+        }
+
+        [Fact]
+        public void GenerateSystem_VerifyDiagonallyDominant()
+        {
+            int size = 10;
+            var (A, b) = LUSolver.GenerateSystem(size);
+            
+            for (int i = 0; i < size; i++)
+            {
+                double sum = 0;
+                for (int j = 0; j < size; j++)
+                {
+                    if (i != j) sum += Math.Abs(A[i][j]);
+                }
+                Assert.True(Math.Abs(A[i][i]) >= sum);
+            }
+        }
+    }
+}

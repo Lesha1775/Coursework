@@ -1,0 +1,230 @@
+﻿using System;
+using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Net;
+using System.Net.Sockets;
+using System.Windows;
+
+namespace WpfApp1
+{
+    public partial class MainWindow : Window
+    {
+        private CancellationTokenSource _cts;
+
+        public MainWindow()
+        {
+            InitializeComponent();
+        }
+
+        private void Log(string message)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                LogTextBox.AppendText($"[{DateTime.Now:HH:mm:ss.fff}] {message}\n");
+                LogTextBox.ScrollToEnd();
+            });
+        }
+
+        private async void BtnRunSequential_Click(object sender, RoutedEventArgs e) => await RunSolverAsync(false);
+        private async void BtnRunParallel_Click(object sender, RoutedEventArgs e) => await RunSolverAsync(true);
+        
+        private async void BtnRunDistributed_Click(object sender, RoutedEventArgs e)
+        {
+            if (!int.TryParse(MatrixSizeTextBox.Text, out int size) || size <= 0) return;
+            
+            SetControlsEnabled(false);
+            Log("--- Запуск (СЕТЕВОЙ режим через Сокеты) ---");
+            Log("ОЖИДАНИЕ КЛИЕНТА (WorkerNode)... Запустите WorkerNode.exe");
+
+            _cts = new CancellationTokenSource();
+            var token = _cts.Token;
+
+            try
+            {
+                var listener = new TcpListener(IPAddress.Any, 8888);
+                listener.Start();
+
+                var acceptTask = listener.AcceptTcpClientAsync();
+                var workerClient = await acceptTask.WaitAsync(token);
+                Log("Worker-клиент подключен!");
+
+                var swTotal = Stopwatch.StartNew();
+                Log("Генерация системы...");
+                var (A, b) = await Task.Run(() => LUSolver.GenerateSystem(size, token), token);
+                
+                Log("Решение системы по сети...");
+                double[] x = null;
+                var swSolve = Stopwatch.StartNew();
+                
+                await Task.Run(() => 
+                {
+                    LUSolver.DistributedNetworkLU(A, size, workerClient);
+                    x = LUSolver.Solve(A, b, size, token);
+                }, token);
+
+                swSolve.Stop(); swTotal.Stop();
+                listener.Stop();
+                workerClient.Dispose();
+
+                Log($"Система решена (Сеть) за {swSolve.ElapsedMilliseconds} мс. Общее: {swTotal.ElapsedMilliseconds} мс.");
+            }
+            catch (Exception ex) { Log($"ОШИБКА Сети: {ex.Message}"); }
+            finally 
+            { 
+                _cts?.Dispose();
+                _cts = null;
+                SetControlsEnabled(true); 
+            }
+        }
+
+        private void BtnClearLog_Click(object sender, RoutedEventArgs e) => LogTextBox.Clear();
+        private void BtnCancel_Click(object sender, RoutedEventArgs e) 
+        {
+            if (_cts != null && !_cts.IsCancellationRequested)
+            {
+                Log("Запрос на отмену вычислений...");
+                _cts.Cancel();
+            }
+        }
+
+        private async Task RunSolverAsync(bool isParallel)
+        {
+            if (!int.TryParse(MatrixSizeTextBox.Text, out int size) || size <= 0)
+            {
+                MessageBox.Show("Введите корректную размерность матрицы.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            _cts = new CancellationTokenSource();
+            var token = _cts.Token;
+
+            try
+            {
+                SetControlsEnabled(false);
+                string mode = isParallel ? "ПАРАЛЛЕЛЬНЫЙ" : "ПОСЛЕДОВАТЕЛЬНЫЙ";
+                Log($"--- Запуск ({mode} режим) | Размер: {size}x{size} ---");
+                
+                var swTotal = Stopwatch.StartNew();
+
+                Log("Генерация системы...");
+                var swGen = Stopwatch.StartNew();
+                var (A, b) = await Task.Run(() => LUSolver.GenerateSystem(size, token), token);
+                swGen.Stop();
+                Log($"Система сгенерирована за {swGen.ElapsedMilliseconds} мс.");
+
+                Log("Решение системы (In-Place)...");
+                var swSolve = Stopwatch.StartNew();
+                
+                double[] x = null; // Переменная для сохранения ответа
+                await Task.Run(() => 
+                {
+                    var LU = isParallel ? LUSolver.ParallelLU(A, size, token) : LUSolver.SequentialLU(A, size, token);
+                    x = LUSolver.Solve(LU, b, size, token); // Получаем вектор корней
+                }, token);
+                swSolve.Stop();
+                swTotal.Stop();
+                
+                Log($"Система решена за {swSolve.ElapsedMilliseconds} мс (Общее время: {swTotal.ElapsedMilliseconds} мс).");
+                
+                // Выводим фрагмент вектора x (первые 5 элементов + последний), чтобы не забить лог
+                int displayCount = Math.Min(size, 5);
+                var elements = new string[displayCount];
+                for (int i = 0; i < displayCount; i++) elements[i] = $"{x[i]:F4}";
+                
+                string formattedX = string.Join(", ", elements);
+                if (size > displayCount) 
+                    formattedX += $", ... x[{size - 1}] = {x[size - 1]:F4}";
+                    
+                Log($"Результат (вектор X): [{formattedX}]\n");
+            }
+            catch (OperationCanceledException) { Log("ВЫПОЛНЕНИЕ ОТМЕНЕНО ПОЛЬЗОВАТЕЛЕМ.\n"); }
+            catch (OutOfMemoryException) { Log("ОШИБКА: Нехватка оперативной памяти!\n"); }
+            catch (Exception ex) { Log($"ОШИБКА: {ex.Message}\n"); }
+            finally 
+            { 
+                _cts?.Dispose();
+                _cts = null;
+                SetControlsEnabled(true); 
+            }
+        }
+
+        private async void BtnRunLoadTests_Click(object sender, RoutedEventArgs e)
+        {
+            SetControlsEnabled(false);
+            Log("--- Нагрузочное тестирование ---");
+            _cts = new CancellationTokenSource();
+            var token = _cts.Token;
+
+            try
+            {
+                foreach (var size in new[] { 100, 500, 1000 })
+                {
+                    Log($"> N = {size}");
+                    var (A_gen, b_gen) = await Task.Run(() => LUSolver.GenerateSystem(size, token), token);
+                    
+                    var swSeq = Stopwatch.StartNew();
+                    await Task.Run(() => { 
+                        var A_seq = CloneMatrix(A_gen, size);
+                        var b_seq = (double[])b_gen.Clone();
+                        var LU = LUSolver.SequentialLU(A_seq, size, token); 
+                        LUSolver.Solve(LU, b_seq, size, token); 
+                    }, token);
+                    Log($"Последовательно: {swSeq.ElapsedMilliseconds} мс.");
+
+                    var swPar = Stopwatch.StartNew();
+                    await Task.Run(() => { 
+                        var A_par = CloneMatrix(A_gen, size);
+                        var b_par = (double[])b_gen.Clone();
+                        var LU = LUSolver.ParallelLU(A_par, size, token); 
+                        LUSolver.Solve(LU, b_par, size, token); 
+                    }, token);
+                    Log($"Параллельно: {swPar.ElapsedMilliseconds} мс.");
+                }
+                Log("Завершено.\n");
+            }
+            catch (OperationCanceledException) { Log("ТЕСТИРОВАНИЕ ОТМЕНЕНО.\n"); }
+            finally 
+            { 
+                _cts?.Dispose();
+                _cts = null;
+                SetControlsEnabled(true); 
+            }
+        }
+
+        private double[][] CloneMatrix(double[][] source, int size)
+        {
+            var dest = new double[size][];
+            for (int i = 0; i < size; i++)
+            {
+                dest[i] = new double[size];
+                Array.Copy(source[i], dest[i], size);
+            }
+            return dest;
+        }
+
+        private void BtnRunUnitTests_Click(object sender, RoutedEventArgs e)
+        {
+            Log("Для запуска полноценных тестов используйте Test Explorer поверх проекта WpfApp1.Tests. Запуск встроенной проверки...");
+            double[][] A = new double[][] 
+            { 
+                new double[] { 2, -1, 0 }, 
+                new double[] { -1, 2, -1 }, 
+                new double[] { 0, -1, 2 } 
+            };
+            double[] b = { 1, 0, 1 };
+            
+            var LU = LUSolver.SequentialLU(A, 3);
+            var x = LUSolver.Solve(LU, b, 3);
+            
+            bool ok = Math.Abs(x[0] - 1.0) < 1e-6;
+            Log(ok ? "Экспресс-тест пройден успешно.\n" : "Ошибка теста.\n");
+        }
+
+        private void SetControlsEnabled(bool isEnabled)
+        {
+            BtnRunSequential.IsEnabled = BtnRunParallel.IsEnabled = BtnRunDistributed.IsEnabled = BtnRunLoadTests.IsEnabled = BtnRunUnitTests.IsEnabled = MatrixSizeTextBox.IsEnabled = isEnabled;
+            BtnCancel.IsEnabled = !isEnabled;
+        }
+    }           
+}
