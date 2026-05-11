@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Admin\\Desktop\\kurs_matr\\WpfApp1\\TestProject1\\TestProject1.csproj": {}
+    "C:\\Users\\Admin\\Desktop\\coursework\\kurs_matr\\WpfApp1\\TestProject1\\TestProject1.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Admin\\Desktop\\kurs_matr\\WpfApp1\\DistributedSolver.Core\\DistributedSolver.Core.csproj": {
+    "C:\\Users\\Admin\\Desktop\\coursework\\kurs_matr\\WpfApp1\\DistributedSolver.Core\\DistributedSolver.Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Admin\\Desktop\\kurs_matr\\WpfApp1\\DistributedSolver.Core\\DistributedSolver.Core.csproj",
+        "projectUniqueName": "C:\\Users\\Admin\\Desktop\\coursework\\kurs_matr\\WpfApp1\\DistributedSolver.Core\\DistributedSolver.Core.csproj",
         "projectName": "DistributedSolver.Core",
-        "projectPath": "C:\\Users\\Admin\\Desktop\\kurs_matr\\WpfApp1\\DistributedSolver.Core\\DistributedSolver.Core.csproj",
+        "projectPath": "C:\\Users\\Admin\\Desktop\\coursework\\kurs_matr\\WpfApp1\\DistributedSolver.Core\\DistributedSolver.Core.csproj",
         "packagesPath": "C:\\Users\\Admin\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Admin\\Desktop\\kurs_matr\\WpfApp1\\DistributedSolver.Core\\obj\\",
+        "outputPath": "C:\\Users\\Admin\\Desktop\\coursework\\kurs_matr\\WpfApp1\\DistributedSolver.Core\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -71,14 +71,14 @@
         }
       }
     },
-    "C:\\Users\\Admin\\Desktop\\kurs_matr\\WpfApp1\\TestProject1\\TestProject1.csproj": {
+    "C:\\Users\\Admin\\Desktop\\coursework\\kurs_matr\\WpfApp1\\TestProject1\\TestProject1.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Admin\\Desktop\\kurs_matr\\WpfApp1\\TestProject1\\TestProject1.csproj",
+        "projectUniqueName": "C:\\Users\\Admin\\Desktop\\coursework\\kurs_matr\\WpfApp1\\TestProject1\\TestProject1.csproj",
         "projectName": "TestProject1",
-        "projectPath": "C:\\Users\\Admin\\Desktop\\kurs_matr\\WpfApp1\\TestProject1\\TestProject1.csproj",
+        "projectPath": "C:\\Users\\Admin\\Desktop\\coursework\\kurs_matr\\WpfApp1\\TestProject1\\TestProject1.csproj",
         "packagesPath": "C:\\Users\\Admin\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Admin\\Desktop\\kurs_matr\\WpfApp1\\TestProject1\\obj\\",
+        "outputPath": "C:\\Users\\Admin\\Desktop\\coursework\\kurs_matr\\WpfApp1\\TestProject1\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -100,11 +100,11 @@
             "framework": "net8.0-windows7.0",
             "targetAlias": "net8.0-windows",
             "projectReferences": {
-              "C:\\Users\\Admin\\Desktop\\kurs_matr\\WpfApp1\\DistributedSolver.Core\\DistributedSolver.Core.csproj": {
-                "projectPath": "C:\\Users\\Admin\\Desktop\\kurs_matr\\WpfApp1\\DistributedSolver.Core\\DistributedSolver.Core.csproj"
+              "C:\\Users\\Admin\\Desktop\\coursework\\kurs_matr\\WpfApp1\\DistributedSolver.Core\\DistributedSolver.Core.csproj": {
+                "projectPath": "C:\\Users\\Admin\\Desktop\\coursework\\kurs_matr\\WpfApp1\\DistributedSolver.Core\\DistributedSolver.Core.csproj"
               },
-              "C:\\Users\\Admin\\Desktop\\kurs_matr\\WpfApp1\\WorkerNode\\WorkerNode.csproj": {
-                "projectPath": "C:\\Users\\Admin\\Desktop\\kurs_matr\\WpfApp1\\WorkerNode\\WorkerNode.csproj"
+              "C:\\Users\\Admin\\Desktop\\coursework\\kurs_matr\\WpfApp1\\WorkerNode\\WorkerNode.csproj": {
+                "projectPath": "C:\\Users\\Admin\\Desktop\\coursework\\kurs_matr\\WpfApp1\\WorkerNode\\WorkerNode.csproj"
               }
             }
           }
@@ -163,14 +163,14 @@
         }
       }
     },
-    "C:\\Users\\Admin\\Desktop\\kurs_matr\\WpfApp1\\WorkerNode\\WorkerNode.csproj": {
+    "C:\\Users\\Admin\\Desktop\\coursework\\kurs_matr\\WpfApp1\\WorkerNode\\WorkerNode.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Admin\\Desktop\\kurs_matr\\WpfApp1\\WorkerNode\\WorkerNode.csproj",
+        "projectUniqueName": "C:\\Users\\Admin\\Desktop\\coursework\\kurs_matr\\WpfApp1\\WorkerNode\\WorkerNode.csproj",
         "projectName": "WorkerNode",
-        "projectPath": "C:\\Users\\Admin\\Desktop\\kurs_matr\\WpfApp1\\WorkerNode\\WorkerNode.csproj",
+        "projectPath": "C:\\Users\\Admin\\Desktop\\coursework\\kurs_matr\\WpfApp1\\WorkerNode\\WorkerNode.csproj",
         "packagesPath": "C:\\Users\\Admin\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Admin\\Desktop\\kurs_matr\\WpfApp1\\WorkerNode\\obj\\",
+        "outputPath": "C:\\Users\\Admin\\Desktop\\coursework\\kurs_matr\\WpfApp1\\WorkerNode\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -192,8 +192,8 @@
             "framework": "net8.0",
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\Admin\\Desktop\\kurs_matr\\WpfApp1\\DistributedSolver.Core\\DistributedSolver.Core.csproj": {
-                "projectPath": "C:\\Users\\Admin\\Desktop\\kurs_matr\\WpfApp1\\DistributedSolver.Core\\DistributedSolver.Core.csproj"
+              "C:\\Users\\Admin\\Desktop\\coursework\\kurs_matr\\WpfApp1\\DistributedSolver.Core\\DistributedSolver.Core.csproj": {
+                "projectPath": "C:\\Users\\Admin\\Desktop\\coursework\\kurs_matr\\WpfApp1\\DistributedSolver.Core\\DistributedSolver.Core.csproj"
               }
             }
           }
